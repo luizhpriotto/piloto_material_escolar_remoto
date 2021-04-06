@@ -34,5 +34,6 @@ custom_build(
     #run('npm i', trigger='package.json'),
     #python -m pip --no-cache install -r requirements/production.txt
     run('python -m pip --no-cache install -r requirements/production.txt', trigger='requirements/production.txt'),
-    run('python -m pip --no-cache install -r requirements/production.txt', trigger='requirements/base.txt')
+    run('python -m pip --no-cache install -r requirements/production.txt', trigger='requirements/base.txt'),
+    run('/code/restart.sh')
   ])
