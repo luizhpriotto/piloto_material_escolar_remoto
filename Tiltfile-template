@@ -21,7 +21,7 @@ custom_build(
   disable_push=True,
   skips_local_docker=True,
   #Fixind a tag, because Tilt generate a dynamic tag
-  #tag = '${tag}',
+  tag = '${tag}',
 
   #live updte for hot reload
   live_update = [

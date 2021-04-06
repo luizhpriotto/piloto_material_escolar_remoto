@@ -24,8 +24,7 @@ spec:
           imagePullPolicy: Always
           command:
             - ./start.sh
-          args:
-            - python manage.py migrate && python manage.py collectstatic --noinput && gunicorn config.wsgi:application --reload --bind=0.0.0.0:8001 -w 8
+            - ./main.sh
           ports:
           - containerPort: 8001
             name: 8001tcp02
