@@ -1,0 +1,123 @@
+version: '3'
+services: 
+  
+  db:
+    image: postgres:11.2-alpine
+    container_name: material-postgress-local
+    restart: always
+    environment: 
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: 12345qw
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: material_escolar
+      PGPASSWORD: 12345qw
+    volumes: 
+      - ../data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+
+  pgadmin4:
+    image: dpage/pgadmin4
+    container_name: material-pgadmin4-local
+    restart: always
+    volumes:
+      - ../storage:/var/lib/pgadmin/storage/
+    ports:
+      - 9090:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    depends_on:
+      - db
+
+  redis:
+    image: redis:5.0.0-alpine
+    container_name: material-redis-local
+    restart: always
+    ports:
+      - "6379:6379"
+
+  material-escolar-beckend:
+    image: luizhpriotto/material-escolar-beckend:tilt-{tag}
+    container_name: material-escolar-beckend
+    command: /bin/sh -c "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn config.wsgi:application --bind=0.0.0.0:8001 -w 8"
+    ports: 
+      - 8001:8001
+    environment:
+      POSTGRES_DB: material_escolar
+      POSTGRES_HOST: db
+      POSTGRES_PASSWORD: 12345qw
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: admin
+      REDIS_LOCATION: redis://redis/1
+      REDIS_URL: redis://redis/1
+      USE_DOCKER: "True"
+      DJANGO_EMAIL_BACKEND: des.backends.ConfiguredEmailBackend
+      DJANGO_SECRET_KEY: Bc290gK1lgzwu2xzNj0iRN8HNdTYZaU72LPeetNsgN1HRWgsDbzJOl68n0KW2Kmz
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      GEOREF_API_URL: https://georef.sme.prefeitura.sp.gov.br
+      SENTRY_URL: ''
+  
+  material-escolar-celery:
+    image: luizhpriotto/material-escolar-beckend:tilt-{tag}
+    container_name: material-escolar-celery
+    command: /bin/sh -c "celery -A config worker --loglevel=info --concurrency=4 --autoscale=10,0"
+    ports: 
+      - 8001
+    environment:
+      POSTGRES_DB: material_escolar
+      POSTGRES_HOST: db
+      POSTGRES_PASSWORD: 12345qw
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: admin
+      REDIS_LOCATION: redis://redis/1
+      REDIS_URL: redis://redis/1
+      USE_DOCKER: "True"
+      DJANGO_EMAIL_BACKEND: des.backends.ConfiguredEmailBackend
+      DJANGO_SECRET_KEY: Bc290gK1lgzwu2xzNj0iRN8HNdTYZaU72LPeetNsgN1HRWgsDbzJOl68n0KW2Kmz
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      GEOREF_API_URL: https://georef.sme.prefeitura.sp.gov.br
+      SENTRY_URL: ''
+
+  material-escolar-beat:
+    image: luizhpriotto/material-escolar-beckend:tilt-{tag}
+    container_name: material-escolar-beat
+    command: /bin/sh -c "celery -A config worker --beat --scheduler django --loglevel=info -E"
+    ports: 
+      - 8001
+    environment:
+      POSTGRES_DB: material_escolar
+      POSTGRES_HOST: db
+      POSTGRES_PASSWORD: 12345qw
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: admin
+      REDIS_LOCATION: redis://redis/1
+      REDIS_URL: redis://redis/1
+      USE_DOCKER: "True"
+      DJANGO_EMAIL_BACKEND: des.backends.ConfiguredEmailBackend
+      DJANGO_SECRET_KEY: Bc290gK1lgzwu2xzNj0iRN8HNdTYZaU72LPeetNsgN1HRWgsDbzJOl68n0KW2Kmz
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      GEOREF_API_URL: https://georef.sme.prefeitura.sp.gov.br
+      SENTRY_URL: ''
+
+  material-escolar-flower:
+    image: luizhpriotto/material-escolar-beckend:tilt-{tag}
+    container_name: material-escolar-flower
+    command: /bin/sh -c "celery flower -A config flower --url_prefix=flower --basic_auth=usr_amcom:AMcom20anos,admin:AMcom20anos@"
+    ports: 
+      - 5555
+    environment:
+      POSTGRES_DB: material_escolar
+      POSTGRES_HOST: db
+      POSTGRES_PASSWORD: 12345qw
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: admin
+      REDIS_LOCATION: redis://redis/1
+      REDIS_URL: redis://redis/1
+      USE_DOCKER: "True"
+      DJANGO_EMAIL_BACKEND: des.backends.ConfiguredEmailBackend
+      DJANGO_SECRET_KEY: Bc290gK1lgzwu2xzNj0iRN8HNdTYZaU72LPeetNsgN1HRWgsDbzJOl68n0KW2Kmz
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      GEOREF_API_URL: https://georef.sme.prefeitura.sp.gov.br
+      SENTRY_URL: ''

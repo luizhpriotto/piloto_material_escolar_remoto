@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: material-escolar-beckend
+  namespace: build
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 25%
+  selector:
+    matchLabels:
+      app: material-escolar-beckend
+  template:
+    metadata:
+      labels:
+        app: material-escolar-beckend
+    spec:
+      containers:
+        - name: material-escolar-beckend      
+          image: luizhpriotto/material-escolar-beckend:${tag}
+          imagePullPolicy: Always
+          command:
+            - /bin/sh
+            - -c
+          args:
+            - python manage.py migrate && python manage.py collectstatic --noinput && gunicorn config.wsgi:application --bind=0.0.0.0:8001 -w 8
+          ports:
+          - containerPort: 8001
+            name: 8001tcp02
+            protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: material-escolar-backend
+          resources: 
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: dockerhub

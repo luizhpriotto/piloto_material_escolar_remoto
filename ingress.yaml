@@ -1,0 +1,15 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+  name: material-escolar-beckend
+  namespace: build
+spec:
+  rules:
+  - host: testapp.sme.prefeitura.sp.gov.br
+    http:
+      paths:
+      - backend:
+          serviceName: material-escolar-beckend
+          servicePort: 8001
+        path: /
